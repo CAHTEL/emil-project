@@ -7,33 +7,34 @@ use function cli\prompt;
 
 function payAnnuitiPayment(int $sum, int $team, $percent)
 {
-    $payment = 0;
-    $q = $sum;
+    $balance = $sum;
     $percentPerMonth = ($percent / 12) / 100;
+    $coefficient = $percentPerMonth * ((1 + $percentPerMonth) ** $team) / ((1 + $percentPerMonth) ** $team - 1);
+    $paymentsMonthly = 0;
      for ($i = 1; $i <= $team; $i++) {
-        $percentParth = round(($sum - $payment) * $percentPerMonth, 2);
-        $coefficient = $percentPerMonth * ((1 + $percentPerMonth) ** $team) / ((1 + $percentPerMonth) ** $team - 1);
+        $percentParth = round(($sum - $paymentsMonthly) * $percentPerMonth, 2);
         $payment = round($sum * $coefficient, 2);
-        $partDuty = round($payment - $percentParth, 2);
-        $q = round($q - $partDuty, 2);
-        line("Платёж в месяц: %s        Процентная часть: %s        Часть от ОД: %s     Остаток задолженности: %s", $payment, $percentParth, $partDuty, $q);
+        $paymentsMonthly = round($payment - $percentParth, 2);
+        $balance = round($balance - $paymentsMonthly, 2);
+        line("Платёж в месяц: %s        Процентная часть: %s        Часть от ОД: %s     Остаток задолженности: %s", $payment, $percentParth, $paymentsMonthly, $balance);
      }
 }
 
 function payDifPayment(int $sum, int $team, &$percent)
 {
-    $partDuty = round($sum / $team, 2);
+    $paymentsMonthly = round($sum / $team, 2);
     $percent = $percent / 100;
     $daysInYear = 360;
+    $daysInMonth = 30;
     for ($i = 1; $i <= $team; $i++) {
-        $q = $sum - ($partDuty * $i);
-        $interestPaid = round(($q * $percent * 30) / $daysInYear, 2);
-        $payment = $partDuty + $interestPaid;
-        line("Платёж в месяц: %s        Процентная часть: %s        Часть от ОД: %s     Остаток задолженности: %s", $payment, $interestPaid, $partDuty, $q);
+        $q = $sum - ($paymentsMonthly * $i);
+        $interestPaid = round(($q * $percent * $daysInMonth) / $daysInYear, 2);
+        $payments = $paymentsMonthly + $interestPaid;
+        line("Платёж в месяц: %s        Процентная часть: %s        Часть от ОД: %s     Остаток задолженности: %s", $payments, $interestPaid, $paymentsMonthly, $q);
     }
 }
 
-function payCredit()
+function run()
 {
     $sumCredit = prompt('Сумма кредита?(в рублях)');
     $termCredit = prompt('Срок кредитования? (в месяцах)');
